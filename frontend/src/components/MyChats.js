@@ -8,7 +8,11 @@ import ChatLoading from "./ChatLoading";
 import GroupChatModal from "./miscellaneous/GroupChatModal";
 import { Button } from "@chakra-ui/react";
 import { ChatState } from "../Context/ChatProvider";
+import JSEncrypt from 'jsencrypt';
 
+
+let decryptor = new JSEncrypt();
+decryptor.setPrivateKey('-----BEGIN RSA PRIVATE KEY----- MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBAIXEGmjn+2RcLYP8UiYfyswQrrkjNa7SfxxB9858k3uzkikLr7pj/4nf841l+lFH++37UhpdWU6h1YbVw1xCB4tm2wSP5YYFQR/1O5+8z2BGpbkGKObhzPVm9IO3HNtCPMBhJ53LlCIjv1FRaWOiFf7BMwMXyC5wlvsDjfVZlxTbAgMBAAECgYA8y6YdK+JL+MEPDazgeu6W1LY0mtYZQL5Yv3q7NE9rl2/Ei/UwR6aqqUhuaXzdWFQeE217YhXm8RK1F46U7cWzY4gXH0ogXZxroMJd5qQ7+fHywOmEb0RiAAYdmiDXPoOmoS8IeNEwowHSuRA4tCSAe+SbygZ41CVYzr3RFQIZsQJBAMGXcWqnUCnQIxLfMkCSNJ0saEcGDooznFWhErZfkFTH+XUwDIF1LtbBdu0GfgScpZctnarsIkiqUS1Xa+pUpb8CQQCw4230BPSx41rL3D3T9GcrdbvqFv122/rZh04A34WeCLK7/qKigteOOJLyI2Jwyei5xALJpSM3+k2zkj5CP2/lAkEAvRxHerw+ntnnqUPHPzSTmQYMR3UvNun7ydozAVyRDYDbuxJY5Q2n17ndhuVUrQSo7eltn85UH0/hRL2leZ9+2QJBAKD3dTlXwSyXzioxU3orsC7WRphxL1oYOJ/3Br64qSj0lWGKCImGM43SYbZDCPPGaSeS/U5uHix0dHzymgFDJRkCQB4TDQtI7fIPcYvUt2QyWMBzBhiGf2iym0u9kcNZvdphObtgC0btxpLTVm7GXLsrXFXPa1bPpfUe5wyYDlyMykM= -----END RSA PRIVATE KEY-----');
 const MyChats = ({ fetchAgain }) => {
   const [loggedUser, setLoggedUser] = useState();
 
@@ -26,7 +30,16 @@ const MyChats = ({ fetchAgain }) => {
       };
 
       const { data } = await axios.get("/api/chat", config);
-      setChats(data);
+      const decryptedChats = data.map(chat => ({
+        ...chat,
+        latestMessage: chat.latestMessage && {
+          ...chat.latestMessage,
+          content: decryptor.decrypt(chat.latestMessage.content)
+        }
+      }));
+  
+      setChats(decryptedChats); 
+  
     } catch (error) {
       toast({
         title: "Error Occured!",

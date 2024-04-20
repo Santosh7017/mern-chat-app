@@ -78,10 +78,10 @@ function SideDrawer() {
       };
 
       const { data } = await axios.get(`/api/user?search=${search}`, config);
-        console.log("data ",data);
+       
       setLoading(false);
      setSearchResult(data);
-     console.log("search result",searchResult);
+    //  console.log("search result",searchResult);
 
     } catch (error) {
       toast({
@@ -96,7 +96,7 @@ function SideDrawer() {
   };
 
   const accessChat = async (userId) => {
-    console.log(userId);
+    // console.log(userId);
 
     try {
       setLoadingChat(true);
