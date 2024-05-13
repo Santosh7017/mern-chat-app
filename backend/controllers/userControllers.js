@@ -23,42 +23,46 @@ const allUsers = asyncHandler(async (req, res) => {
 //@description     Register new user
 //@route           POST /api/user/
 //@access          Public
-const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, password, pic } = req.body;
+  const registerUser = asyncHandler(async (req, res) => {
+    const { name, email, password, pic } = req.body;
+    const passwordRegex = new RegExp('^(?=.*[a-z])(?=.*[A-Z]).{8,}$');
+    if (!name || !email || !password) {
+      res.status(400);
+      throw new Error("Please Enter all the Feilds");
+    }
+    if (!passwordRegex.test(password)) {
+      res.status(400);
+      throw new Error("Password must be at least 8 characters long and contain at least one uppercase and one lowercase letter");
+    }
 
-  if (!name || !email || !password) {
-    res.status(400);
-    throw new Error("Please Enter all the Feilds");
-  }
+    const userExists = await User.findOne({ email });
 
-  const userExists = await User.findOne({ email });
+    if (userExists) {
+      res.status(400);
+      throw new Error("User already exists");
+    }
 
-  if (userExists) {
-    res.status(400);
-    throw new Error("User already exists");
-  }
-
-  const user = await User.create({
-    name,
-    email,
-    password,
-    pic,
-  });
-
-  if (user) {
-    res.status(201).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      isAdmin: user.isAdmin,
-      pic: user.pic,
-      token: generateToken(user._id),
+    const user = await User.create({
+      name,
+      email,
+      password,
+      pic,
     });
-  } else {
-    res.status(400);
-    throw new Error("User not found");
-  }
-});
+
+    if (user) {
+      res.status(201).json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        isAdmin: user.isAdmin,
+        pic: user.pic,
+        token: generateToken(user._id),
+      });
+    } else {
+      res.status(400);
+      throw new Error("User not found");
+    }
+  });
 
 //@description     Auth the user
 //@route           POST /api/users/login
